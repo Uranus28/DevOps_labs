@@ -1,0 +1,28 @@
+---
+- name: NMAP tasks
+  hosts: webservers
+  become: yes
+  become_method: sudo
+  remote_user: runner
+
+  tasks:
+  - name: Install NMAP
+    ansible.builtin.apt:
+      name: nmap
+      state: latest
+      update_cache: yes
+
+  - name: Copy nmap targets list v1
+    ansible.builtin.copy:
+      src: ./targets.txt
+      dest: ~/targets_v1.txt
+      force: yes
+      mode: '0644'
+
+  - name: Run nmap v1
+    ansible.builtin.command: "nmap -iL ~/targets_v1.txt -p 80 -oG -"
+    register: nmap_result
+
+  - name: Nmap output
+    debug:
+      msg: "{{nmap_result.stdout_lines}}"

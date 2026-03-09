@@ -1,0 +1,23 @@
+---
+- name: NMAP tasks with loop
+  hosts: webservers
+  become: yes
+  become_method: sudo
+  remote_user: runner
+
+  tasks:
+  - name: Install NMAP
+    ansible.builtin.apt:
+      name: nmap
+      state: latest
+      update_cache: yes
+
+  - name: Scan
+    ansible.builtin.command: "nmap {{ item }} -p 80 -oG -"
+    loop: "{{ lookup('file', './targets.txt').splitlines()  }}"
+    register: scan_results
+
+  - name: Scan results
+    ansible.builtin.debug:
+      msg:  "{{ item.stdout_lines }}"
+    loop: "{{ scan_results.results }}"
